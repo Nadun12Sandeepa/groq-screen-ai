@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Groq Screen AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;500;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #00ff9d;
+      --accent2: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --danger: #ff4444;
+    }
+
+    body {
+      width: 420px;
+      min-height: 560px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Header */
+    .header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .logo-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+    .model-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Settings bar */
+    .settings-bar {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-bar label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .settings-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 9px;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .settings-bar input:focus { border-color: var(--accent2); }
+    .save-btn {
+      background: var(--accent2);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .save-btn:hover { opacity: 0.85; }
+
+    /* Capture modes */
+    .capture-section {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+    .mode-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 6px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .mode-btn .icon { font-size: 16px; }
+    .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .mode-btn.active {
+      border-color: var(--accent);
+      background: rgba(0,255,157,0.06);
+      color: var(--accent);
+    }
+
+    /* Content preview */
+    .preview-section {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      min-height: 60px;
+      max-height: 100px;
+      overflow-y: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+    .preview-box .empty { color: #333; font-style: italic; }
+
+    /* Question input */
+    .question-section {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .question-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      resize: none;
+      height: 64px;
+      transition: border-color 0.2s;
+    }
+    .question-input:focus { border-color: var(--accent2); }
+    .question-input::placeholder { color: #2a2a3a; }
+
+    .ask-btn {
+      background: linear-gradient(135deg, var(--accent2), #4f46e5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.03em;
+    }
+    .ask-btn:hover { opacity: 0.9; }
+    .ask-btn:active { transform: scale(0.98); }
+    .ask-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Spinner */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Answer section */
+    .answer-section {
+      padding: 10px 16px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .answer-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 80px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .answer-box.streaming { border-color: var(--accent2); }
+    .answer-box .placeholder { color: #2a2a3a; font-style: italic; }
+    .cursor {
+      display: inline-block;
+      width: 2px; height: 13px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 1px;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .action-row {
+      display: flex;
+      gap: 6px;
+    }
+    .copy-btn, .clear-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Status bar */
+    .status-bar {
+      padding: 4px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+    .status-ok { color: var(--accent); }
+    .status-err { color: var(--danger); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">GROQ·AI</span>
+    </div>
+    <span class="model-badge" id="modelName">gpt-oss-120b</span>
+  </div>
+
+  <div class="settings-bar">
+    <label>API KEY</label>
+    <input type="password" id="apiKey" placeholder="gsk_..." />
+    <button class="save-btn" id="saveKey">Save</button>
+  </div>
+
+  <div class="capture-section">
+    <div class="section-label">Capture Mode</div>
+    <div class="mode-grid">
+      <button class="mode-btn active" data-mode="page" id="modePageBtn">
+        <span class="icon">📄</span>Full Page
+      </button>
+      <button class="mode-btn" data-mode="selection" id="modeSelBtn">
+        <span class="icon">✂️</span>Selection
+      </button>
+      <button class="mode-btn" data-mode="screenshot" id="modeScreenBtn">
+        <span class="icon">📸</span>Screenshot
+      </button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="section-label">Captured Content <span id="captureInfo"></span></div>
+    <div class="preview-box" id="previewBox">
+      <span class="empty">Click a capture mode to grab page content…</span>
+    </div>
+  </div>
+
+  <div class="question-section">
+    <div class="section-label">Your Question</div>
+    <textarea class="question-input" id="question" placeholder="What does this page say about…&#10;Summarize this content…&#10;Explain this selection…"></textarea>
+    <button class="ask-btn" id="askBtn">
+      <span>⚡</span> Ask Groq AI
+    </button>
+  </div>
+
+  <div class="answer-section">
+    <div class="section-label">Answer</div>
+    <div class="answer-box" id="answerBox">
+      <span class="placeholder">Your answer will appear here…</span>
+    </div>
+    <div class="action-row">
+      <button class="copy-btn" id="copyBtn">📋 Copy Answer</button>
+      <button class="clear-btn" id="clearBtn">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusMsg">Ready</span>
+    <span id="tokenCount"></span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
